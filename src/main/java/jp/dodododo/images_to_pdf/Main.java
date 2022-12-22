@@ -31,22 +31,13 @@ public class Main {
 
         try (PDDocument document = new PDDocument();) {
 
-            File dir = new File(dirPath);
-            List<File> imageFiles = sort(dir.listFiles((dir1, name) -> {
-                String[] images = new String[]{"jpg", "jepg", "png", "HEIC"};
-                for (String image : images) {
-                    if (name.toLowerCase().endsWith(image.toLowerCase())) {
-                        return true;
-                    }
-                }
-                return false;
-            }));
+            List<File> imageFiles = getImageFiles(new File(dirPath));
 
             for (File f : imageFiles) {
                 PDPage page = new PDPage();
                 f = toJpegFromHeic(f);
                 changeImageSize(f);
-                addImage(document, page, f);
+                addImageIntoPage(document, page, f);
                 document.addPage(page);
             }
 
@@ -55,7 +46,20 @@ public class Main {
         }
     }
 
-    private static void addImage(PDDocument document, PDPage page, File image) throws IOException {
+    private static List<File> getImageFiles(File dir) {
+        return sort(dir.listFiles((dir1, name) -> {
+            String[] images = new String[]{"jpg", "jepg", "png", "HEIC"};
+            for (String image : images) {
+                if (name.toLowerCase().endsWith(image.toLowerCase())) {
+                    return true;
+                }
+            }
+            return false;
+        }));
+
+    }
+
+    private static void addImageIntoPage(PDDocument document, PDPage page, File image) throws IOException {
         try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
             String file = image.getPath();
             PDImageXObject imageObj = PDImageXObject.createFromFile(file, document);
